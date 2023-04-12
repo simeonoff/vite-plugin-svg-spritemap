@@ -178,9 +178,12 @@ export class SVGManager {
   private async createFileStyle() {
     if (typeof this._options.styles !== 'object') return
     const styleGen: Styles = new Styles(this._svgs, this._options)
-    const content = await styleGen.generate()
-    const path = resolve(this._config.root, this._options.styles.filename)
+    const styles = styleGen.generate()
 
-    await fs.writeFile(path, content, 'utf8')
+    this._options.styles.forEach(async (entry) => {
+        const path = resolve(this._config.root, entry.filename)
+        const content = await styles.get(entry.filename)
+        await fs.writeFile(path, content as string, 'utf8')
+    })
   }
 }

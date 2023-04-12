@@ -3,7 +3,7 @@ import { readFile } from 'fs'
 import { promisify } from 'util'
 import path, { join } from 'path'
 import svgToMiniDataURI from 'mini-svg-data-uri'
-import { Options, SvgMapObject } from '../types'
+import { Options, StylesLang, SvgMapObject } from '../types'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 interface SvgDataUriMapObject {
@@ -49,13 +49,11 @@ export class Styles {
     return spriteMap
   }
 
-  private async insert(insert: string): Promise<string> {
+  private async insert(insert: string, lang: StylesLang): Promise<string> {
     if (!this._options.styles) return ''
-    const template =
-      this._options.styles.lang === 'css'
-        ? ''
+    const template = lang === 'css' ? ''
         : await promisify(readFile)(
-            join(__dirname, `/template.${this._options.styles.lang}`),
+            join(__dirname, `/template.${lang}`),
             'utf8'
           )
 
@@ -147,25 +145,31 @@ $sprites-prefix: '${this._options.prefix}';\n`
     return insert
   }
 
-  public async generate(): Promise<string> {
-    if (!this._options.styles) return ''
-    let insert: string
+  public generate(): Map<string, Promise<string>> {
+    const result = new Map<string, Promise<string>>()
+    if (!this._options.styles) return result
 
-    switch (this._options.styles.lang) {
-      case 'scss':
-        insert = this._generate_scss()
-        break
-      case 'styl':
-        insert = this._generate_styl()
-        break
-      case 'less':
-        insert = this._generate_less()
-        break
-      case 'css':
-      default:
-        insert = this._generate_css()
-    }
+    this._options.styles.forEach((entry) => {
+        let insert: string
 
-    return await this.insert(insert)
+        switch (entry.lang) {
+          case 'scss':
+            insert = this._generate_scss()
+            break
+          case 'styl':
+            insert = this._generate_styl()
+            break
+          case 'less':
+            insert = this._generate_less()
+            break
+          case 'css':
+          default:
+            insert = this._generate_css()
+        }
+
+        result.set(entry.filename, this.insert(insert, entry.lang))
+    })
+
+    return result
   }
 }

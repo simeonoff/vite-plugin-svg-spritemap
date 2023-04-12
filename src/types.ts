@@ -15,7 +15,7 @@ export interface UserOptions {
     | {
         filename: string
         lang?: StylesLang
-      }
+      }[]
     | string
     | false
 }
@@ -33,7 +33,7 @@ export interface OptionsStyles {
 
 export interface Options {
   svgo: Config | false
-  styles: OptionsStyles | false
+  styles: OptionsStyles[] | false
   output: OptionsOutput | false
   prefix: string
 }

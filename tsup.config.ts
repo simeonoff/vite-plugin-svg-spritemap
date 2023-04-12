@@ -5,7 +5,7 @@ import fg from 'fast-glob'
 export default defineConfig({
   entry: ['src/index.ts'],
   dts: true,
-  format: ['cjs', 'esm'],
+  format: ['esm'],
   async onSuccess() {
     const files = await fg('src/styles/*.(scss|styl|less)')
     for (const file of files) {

@@ -1,4 +1,4 @@
-import type { Options, UserOptions, StylesLang } from '../types'
+import type { Options, UserOptions } from '../types'
 
 export const createOptions = (options: UserOptions = {}): Options => {
   const prefix: Options['prefix'] = options.prefix || 'sprite-'
@@ -26,35 +26,50 @@ export const createOptions = (options: UserOptions = {}): Options => {
     svgo = options.svgo
   }
 
-  let styles: Options['styles'] = false
+  const styles: Options['styles'] = []
   const stylesLang = ['css', 'scss', 'less', 'styl']
-  if (typeof options.styles === 'string') {
-    let lang = options.styles.split('.').pop() as StylesLang | undefined
-    const stylesLang = ['css', 'scss', 'less', 'styl']
 
-    if (typeof lang === 'undefined' || !stylesLang.includes(lang)) {
-      lang = 'css'
-      console.warn(
-        '[vite-plugin-spritemap]',
-        'Invalid styles lang, fallback to css'
-      )
-    }
-
-    styles = {
-      filename: options.styles,
-      lang
-    }
-  } else if (
-    typeof options.styles === 'object' &&
-    typeof options.styles.filename === 'string' &&
-    typeof options.styles.lang === 'string' &&
-    stylesLang.includes(options.styles.lang)
-  ) {
-    styles = {
-      filename: options.styles.filename,
-      lang: options.styles.lang
-    }
+  if (Array.isArray(options.styles)) {
+    options.styles.forEach(({ filename, lang }) => {
+      if (
+        typeof filename === 'string' &&
+        typeof lang === 'string' &&
+        stylesLang.includes(lang)
+      ) {
+        styles.push({
+          filename,
+          lang
+        })
+      }
+    })
   }
+  // if (typeof options.styles === 'string') {
+  //   let lang = options.styles.split('.').pop() as StylesLang | undefined
+  //   const stylesLang = ['css', 'scss', 'less', 'styl']
+  //
+  //   if (typeof lang === 'undefined' || !stylesLang.includes(lang)) {
+  //     lang = 'css'
+  //     console.warn(
+  //       '[vite-plugin-spritemap]',
+  //       'Invalid styles lang, fallback to css'
+  //     )
+  //   }
+  //
+  //   styles = {
+  //     filename: options.styles,
+  //     lang
+  //   }
+  // } else if (
+  //   typeof options.styles === 'object' &&
+  //   typeof options.styles.filename === 'string' &&
+  //   typeof options.styles.lang === 'string' &&
+  //   stylesLang.includes(options.styles.lang)
+  // ) {
+  //   styles = {
+  //     filename: options.styles.filename,
+  //     lang: options.styles.lang
+  //   }
+  // }
 
   let output: Options['output'] = {
     filename: '[name].[hash][extname]',
